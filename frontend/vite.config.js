@@ -1,24 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
-// https://vite.dev/config/
 export default defineConfig({
+  plugins: [react(), tailwindcss()],
   server: {
     port: 3000,
     strictPort: true,
     open: true,
   },
-  preview: {
-    port: 3000,
-    strictPort: true,
-    open: true,
-  },
   test: {
-    mockReset: true,
-    globals: true,
     environment: "jsdom",
+    globals: true,
     setupFiles: "./src/setupTests.js",
-    exclude: ["node_modules", "src/tests/e2e"],
+    exclude: ["**/tests/e2e/**", "**/node_modules/**"],
   },
-  plugins: [react()],
 });
