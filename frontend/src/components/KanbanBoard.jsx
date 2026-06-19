@@ -32,7 +32,7 @@ function KanbanBoard() {
 
   function addTask() {
     if (!title.trim()) return;
-    socket.emit("task:create", { title, priority: "Medium", category: "Feature" });
+   socket.emit("task:create", { title, priority, category });
     setTitle("");
   }
 
