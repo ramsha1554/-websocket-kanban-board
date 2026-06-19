@@ -66,6 +66,15 @@ function KanbanBoard() {
           placeholder="Add a new task..."
           className="border-b-2 border-gray-300 px-1 py-2 text-sm w-72 outline-none focus:border-gray-900 transition-colors"
         />
+        <select
+  value={priority}
+  onChange={(e) => setPriority(e.target.value)}
+  className="border border-gray-300 px-2 py-2 text-sm outline-none focus:border-gray-900 bg-white"
+>
+  <option value="Low">Low</option>
+  <option value="Medium">Medium</option>
+  <option value="High">High</option>
+</select>
         <button
           onClick={addTask}
           className="flex items-center gap-1 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-700 transition-colors"
