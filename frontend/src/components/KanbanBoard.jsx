@@ -19,6 +19,7 @@ function KanbanBoard() {
   const [priority, setPriority] = useState("Medium");
   const [category, setCategory] = useState("Feature");
   const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState("");
 
   useEffect(() => {
     socket.on("sync:tasks", (data) => setTasks(data));
@@ -105,10 +106,25 @@ function KanbanBoard() {
           <option value="Enhancement">Enhancement</option>
         </select>
 
-        <input
+      <input
           ref={fileInputRef}
           type="file"
-          onChange={(e) => setFile(e.target.files[0])}
+          accept="image/*"
+          onChange={(e) => {
+            const selected = e.target.files[0];
+            if (!selected) return;
+
+            const allowedTypes = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+            if (!allowedTypes.includes(selected.type)) {
+              setFileError("Invalid file type. Only PNG, JPEG, GIF, or WEBP images are allowed.");
+              setFile(null);
+              if (fileInputRef.current) fileInputRef.current.value = "";
+              return;
+            }
+
+            setFileError("");
+            setFile(selected);
+          }}
           className="text-sm"
         />
 
