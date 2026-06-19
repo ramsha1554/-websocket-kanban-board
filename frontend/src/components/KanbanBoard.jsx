@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { Plus, ArrowLeft, ArrowRight, Trash2, Circle } from "lucide-react";
 
@@ -13,6 +13,7 @@ const COLUMNS = [
 const ORDER = ["todo", "inprogress", "done"];
 
 function KanbanBoard() {
+  const fileInputRef = useRef(null);
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("Medium");
@@ -31,7 +32,7 @@ function KanbanBoard() {
     return () => socket.removeAllListeners();
   }, []);
 
-function addTask() {
+  function addTask() {
     if (!title.trim()) return;
 
     if (file) {
@@ -46,6 +47,7 @@ function addTask() {
         });
         setTitle("");
         setFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
       };
       reader.readAsDataURL(file);
     } else {
@@ -53,6 +55,7 @@ function addTask() {
       setTitle("");
     }
   }
+
   function moveTask(id, currentColumn, direction) {
     const i = ORDER.indexOf(currentColumn);
     const next = direction === "next" ? i + 1 : i - 1;
@@ -84,30 +87,31 @@ function addTask() {
           className="border-b-2 border-gray-300 px-1 py-2 text-sm w-72 outline-none focus:border-gray-900 transition-colors"
         />
         <select
-  value={priority}
-  onChange={(e) => setPriority(e.target.value)}
-  className="border border-gray-300 px-2 py-2 text-sm outline-none focus:border-gray-900 bg-white"
->
-  <option value="Low">Low</option>
-  <option value="Medium">Medium</option>
-  <option value="High">High</option>
-</select>
-<select
-  value={category}
-  onChange={(e) => setCategory(e.target.value)}
-  className="border border-gray-300 px-2 py-2 text-sm outline-none focus:border-gray-900 bg-white"
->
-  <option value="Feature">Feature</option>
-  <option value="Bug">Bug</option>
-  <option value="Enhancement">Enhancement</option>
-</select>
-        
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          className="border border-gray-300 px-2 py-2 text-sm outline-none focus:border-gray-900 bg-white"
+        >
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="border border-gray-300 px-2 py-2 text-sm outline-none focus:border-gray-900 bg-white"
+        >
+          <option value="Feature">Feature</option>
+          <option value="Bug">Bug</option>
+          <option value="Enhancement">Enhancement</option>
+        </select>
+
         <input
-  type="file"
-  onChange={(e) => setFile(e.target.files[0])}
-  className="text-sm"
-/>
-        
+          ref={fileInputRef}
+          type="file"
+          onChange={(e) => setFile(e.target.files[0])}
+          className="text-sm"
+        />
+
         <button
           onClick={addTask}
           className="flex items-center gap-1 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-700 transition-colors"
@@ -136,7 +140,14 @@ function addTask() {
                     key={task.id}
                     className="border border-gray-200 p-3 hover:border-gray-900 transition-colors group"
                   >
-                <p className="text-sm text-gray-900 mb-1">{task.title}</p>
+                    {task.fileData && task.fileData.startsWith("data:image") && (
+                      <img
+                        src={task.fileData}
+                        alt={task.fileName || "attachment"}
+                        className="w-full h-28 object-cover border border-gray-200 mb-2"
+                      />
+                    )}
+                    <p className="text-sm text-gray-900 mb-1">{task.title}</p>
                     <div className="flex gap-1 mb-3">
                       <span
                         className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 border ${
