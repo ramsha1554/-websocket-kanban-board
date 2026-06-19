@@ -136,7 +136,23 @@ function addTask() {
                     key={task.id}
                     className="border border-gray-200 p-3 hover:border-gray-900 transition-colors group"
                   >
-                    <p className="text-sm text-gray-900 mb-3">{task.title}</p>
+                <p className="text-sm text-gray-900 mb-1">{task.title}</p>
+                    <div className="flex gap-1 mb-3">
+                      <span
+                        className={`text-[10px] uppercase tracking-wide px-1.5 py-0.5 border ${
+                          task.priority === "High"
+                            ? "border-red-600 text-red-600"
+                            : task.priority === "Medium"
+                            ? "border-yellow-600 text-yellow-600"
+                            : "border-gray-400 text-gray-500"
+                        }`}
+                      >
+                        {task.priority}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 border border-gray-900 text-gray-900">
+                        {task.category}
+                      </span>
+                    </div>
                     <div className="flex items-center justify-between">
                       <div className="flex gap-1">
                         {col.key !== "todo" && (
