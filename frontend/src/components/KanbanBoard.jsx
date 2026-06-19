@@ -31,12 +31,28 @@ function KanbanBoard() {
     return () => socket.removeAllListeners();
   }, []);
 
-  function addTask() {
+function addTask() {
     if (!title.trim()) return;
-   socket.emit("task:create", { title, priority, category });
-    setTitle("");
-  }
 
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        socket.emit("task:create", {
+          title,
+          priority,
+          category,
+          fileName: file.name,
+          fileData: reader.result,
+        });
+        setTitle("");
+        setFile(null);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      socket.emit("task:create", { title, priority, category });
+      setTitle("");
+    }
+  }
   function moveTask(id, currentColumn, direction) {
     const i = ORDER.indexOf(currentColumn);
     const next = direction === "next" ? i + 1 : i - 1;
