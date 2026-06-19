@@ -75,6 +75,15 @@ function KanbanBoard() {
   <option value="Medium">Medium</option>
   <option value="High">High</option>
 </select>
+<select
+  value={category}
+  onChange={(e) => setCategory(e.target.value)}
+  className="border border-gray-300 px-2 py-2 text-sm outline-none focus:border-gray-900 bg-white"
+>
+  <option value="Feature">Feature</option>
+  <option value="Bug">Bug</option>
+  <option value="Enhancement">Enhancement</option>
+</select>
         <button
           onClick={addTask}
           className="flex items-center gap-1 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-700 transition-colors"
