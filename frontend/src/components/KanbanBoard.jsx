@@ -17,6 +17,7 @@ function KanbanBoard() {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [category, setCategory] = useState("Feature");
+  const [file, setFile] = useState(null);
 
   useEffect(() => {
     socket.on("sync:tasks", (data) => setTasks(data));
