@@ -85,6 +85,13 @@ function KanbanBoard() {
   <option value="Bug">Bug</option>
   <option value="Enhancement">Enhancement</option>
 </select>
+        
+        <input
+  type="file"
+  onChange={(e) => setFile(e.target.files[0])}
+  className="text-sm"
+/>
+        
         <button
           onClick={addTask}
           className="flex items-center gap-1 bg-gray-900 text-white px-4 py-2 text-sm font-medium hover:bg-gray-700 transition-colors"
