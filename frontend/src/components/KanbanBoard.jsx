@@ -1,4 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
+import {
+  DndContext,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  PointerSensor,
+} from "@dnd-kit/core";
 import { io } from "socket.io-client";
 import { Plus, ArrowLeft, ArrowRight, Trash2, Circle } from "lucide-react";
 
