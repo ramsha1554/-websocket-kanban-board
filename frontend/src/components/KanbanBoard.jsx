@@ -20,6 +20,41 @@ const COLUMNS = [
 
 const ORDER = ["todo", "inprogress", "done"];
 
+function DraggableTask({ task, children }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: task.id,
+  });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        opacity: isDragging ? 0.5 : 1,
+        zIndex: isDragging ? 10 : "auto",
+      }
+    : undefined;
+
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+      {children}
+    </div>
+  );
+}
+
+function DroppableColumn({ id, children }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`space-y-3 min-h-[300px] border-t pt-4 transition-colors ${
+        isOver ? "border-gray-900 bg-gray-50" : "border-gray-200"
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
 function KanbanBoard() {
   const fileInputRef = useRef(null);
   const [tasks, setTasks] = useState([]);
@@ -76,6 +111,21 @@ function KanbanBoard() {
     socket.emit("task:delete", id);
   }
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
+  );
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    if (!over) return;
+    const task = tasks.find((t) => t.id === active.id);
+    if (task && task.column !== over.id) {
+      socket.emit("task:move", { id: active.id, column: over.id });
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white p-10">
       <div className="flex items-center justify-between mb-8 border-b border-gray-900 pb-4">
@@ -114,7 +164,7 @@ function KanbanBoard() {
           <option value="Enhancement">Enhancement</option>
         </select>
 
-      <input
+        <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
@@ -145,6 +195,11 @@ function KanbanBoard() {
         </button>
       </div>
 
+      {fileError && (
+        <p className="text-xs text-red-600 -mt-8 mb-8">{fileError}</p>
+      )}
+
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="grid grid-cols-3 gap-8">
         {COLUMNS.map((col) => {
           const colTasks = tasks.filter((t) => t.column === col.key);
@@ -158,11 +213,11 @@ function KanbanBoard() {
                 <span className="text-xs text-gray-400">{colTasks.length}</span>
               </div>
 
-              <div className="space-y-3 min-h-[300px] border-t border-gray-200 pt-4">
+              <DroppableColumn id={col.key}>
                 {colTasks.map((task) => (
+                  <DraggableTask key={task.id} task={task}>
                   <div
-                    key={task.id}
-                    className="border border-gray-200 p-3 hover:border-gray-900 transition-colors group"
+                    className="border border-gray-200 p-3 hover:border-gray-900 transition-colors group bg-white cursor-grab active:cursor-grabbing"
                   >
                     {task.fileData && task.fileData.startsWith("data:image") && (
                       <img
@@ -218,16 +273,18 @@ function KanbanBoard() {
                       </button>
                     </div>
                   </div>
+                  </DraggableTask>
                 ))}
 
                 {colTasks.length === 0 && (
                   <p className="text-xs text-gray-300 italic">No tasks</p>
                 )}
-              </div>
+              </DroppableColumn>
             </div>
           );
         })}
       </div>
+      </DndContext>
     </div>
   );
 }
