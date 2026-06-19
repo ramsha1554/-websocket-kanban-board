@@ -15,6 +15,7 @@ const ORDER = ["todo", "inprogress", "done"];
 function KanbanBoard() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState("Medium");
 
   useEffect(() => {
     socket.on("sync:tasks", (data) => setTasks(data));
