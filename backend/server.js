@@ -17,9 +17,24 @@ io.on("connection", (socket) => {
   socket.emit("sync:tasks", tasks);
 
   socket.on("task:create", (data) => {
-    const task = { id: generateId(), column: "todo", ...data };
+    const task = {
+      id: generateId(),
+      column: "todo",
+      description: "",
+      fileName: null,
+      fileData: null,
+      createdAt: new Date().toISOString(),
+      ...data,
+    };
     tasks.push(task);
     io.emit("task:created", task);
+  });
+
+  socket.on("task:update", (data) => {
+    const index = tasks.findIndex((t) => t.id === data.id);
+    if (index === -1) return;
+    tasks[index] = { ...tasks[index], ...data };
+    io.emit("task:updated", tasks[index]);
   });
 
   socket.on("task:move", ({ id, column }) => {
