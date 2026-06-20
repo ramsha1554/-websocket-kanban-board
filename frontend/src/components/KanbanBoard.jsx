@@ -9,7 +9,7 @@ import {
 } from "@dnd-kit/core";
 import { io } from "socket.io-client";
 import { Plus, ArrowLeft, ArrowRight, Trash2, Circle } from "lucide-react";
-
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 const socket = io("http://localhost:5000");
 
 const COLUMNS = [
@@ -125,6 +125,17 @@ function KanbanBoard() {
       socket.emit("task:move", { id: active.id, column: over.id });
     }
   }
+const chartData = [
+  { name: "To Do", count: tasks.filter((t) => t.column === "todo").length },
+  { name: "In Progress", count: tasks.filter((t) => t.column === "inprogress").length },
+  { name: "Done", count: tasks.filter((t) => t.column === "done").length },
+];
+
+const total = tasks.length;
+const done = tasks.filter((t) => t.column === "done").length;
+const percent = total === 0 ? 0 : Math.round((done / total) * 100);
+
+
 
   return (
     <div className="min-h-screen bg-white p-10">
@@ -285,6 +296,22 @@ function KanbanBoard() {
         })}
       </div>
       </DndContext>
+      <div className="mt-10 border-t border-gray-200 pt-8">
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-700">
+      Progress
+    </h2>
+    <span className="text-xs text-gray-400">{percent}% complete</span>
+  </div>
+  <ResponsiveContainer width="100%" height={180}>
+    <BarChart data={chartData}>
+      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+      <Tooltip />
+      <Bar dataKey="count" fill="#111111" radius={[2, 2, 0, 0]} />
+    </BarChart>
+  </ResponsiveContainer>
+</div>
     </div>
   );
 }
