@@ -14,4 +14,10 @@ export default defineConfig({
       use: { browserName: "chromium" },
     },
   ],
+  webServer: {
+    command: "npm run build && npm run preview",
+    port: 3000,
+    reuseExistingServer: false,
+    timeout: 120000,
+  },
 });
