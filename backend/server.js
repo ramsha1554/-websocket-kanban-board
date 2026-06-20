@@ -4,7 +4,13 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "http://localhost:3000" } });
+// const io = new Server(server, { cors: { origin: "http://localhost:3000" } });
+
+const io = new Server(server, {
+  cors: { origin: "http://localhost:3000" },
+  maxHttpBufferSize: 5e6, 
+});
+
 
 let tasks = [];
 
