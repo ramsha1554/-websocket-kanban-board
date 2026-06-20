@@ -2,7 +2,7 @@
 import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./tests/e2e", // Path to your test files
+ testDir: "./src/tests/e2e",
   timeout: 20 * 1000, // Test timeout in milliseconds
   use: {
     headless: false, // Run tests in headless mode
