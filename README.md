@@ -1,194 +1,206 @@
-# 📝 WebSocket-Powered Kanban Board - Candidate Guide
+# WebSocket-Powered Kanban Board
 
-## 📌 Project Overview
+A real-time Kanban board built with React, Node.js, and Socket.IO. Tasks sync instantly across all connected clients — create, edit, move, and delete tasks with live updates, file attachments, priority/category tagging, and a live progress chart.
 
-This project involves building a **real-time Kanban board** where users can **add, update, delete, move tasks between columns, upload attachments, assign priority & category, and visualize progress**.
-
-The goal is to assess proficiency in:  
-✅ **React** (for UI)  
-✅ **WebSockets (Socket.IO)** (for real-time updates)  
-✅ **Vitest + React Testing Library** (for unit & integration testing)  
-✅ **Playwright** (for end-to-end testing)
+**Live Demo:** [websocket-kanban-board-lake.vercel.app](https://websocket-kanban-board-lake.vercel.app)  
+**Backend API:** [websocket-kanban-board-pzym.onrender.com](https://websocket-kanban-board-pzym.onrender.com)
 
 ---
 
-## 📂 Project Structure
+## Features
+
+- **Real-time sync** — all changes broadcast instantly to every connected client via Socket.IO
+- **Drag and drop** — move tasks between columns using `@dnd-kit`
+- **Arrow navigation** — move tasks forward/back between columns with buttons
+- **Create / edit / delete tasks** — inline editing with save/cancel
+- **Priority & category** — Low / Medium / High priority and Bug / Feature / Enhancement category per task
+- **File attachments** — upload images (PNG, JPEG, GIF, WEBP) with inline preview on the task card
+- **File validation** — invalid file types show an error message
+- **Progress sidebar** — live Recharts bar chart showing task count per column + overall completion %
+- **Loading state** — "Syncing tasks..." shown until the server responds
+- **Persistent storage** — tasks saved to `tasks.json` on the server, survive restarts
+- **Multi-client sync** — open two tabs and changes appear instantly in both
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite |
+| Drag & Drop | @dnd-kit/core |
+| Charts | Recharts |
+| Icons | lucide-react |
+| WebSockets | Socket.IO client |
+| Backend | Node.js, Express, Socket.IO |
+| Persistence | JSON file (tasks.json) |
+| Unit & Integration Tests | Vitest + React Testing Library |
+| E2E Tests | Playwright |
+| Frontend Deploy | Vercel |
+| Backend Deploy | Render |
+
+---
+
+## Project Structure
 
 ```
-websocket-kanban-vitest-playwright
-│── backend/                     # Node.js WebSocket server
-│   ├── server.js                 # Express + Socket.IO WebSocket setup
-│   ├── package.json              # Backend dependencies
+├── backend/
+│   ├── server.js                   # Express + Socket.IO server
+│   ├── tasks.json                  # Persistent task storage (auto-created)
+│   └── package.json
 │
-│── frontend/                     # React app
+├── frontend/
 │   ├── src/
-│   │   ├── components/           # UI components
-│   │   │   ├── KanbanBoard.jsx
-│   │   ├── tests/                # All test cases
-│   │   │   ├── unit/             # Unit tests (Vitest)
-│   │   │   ├── integration/      # Integration tests (Vitest)
-│   │   │   ├── e2e/              # End-to-end tests (Playwright)
-│   ├── package.json
+│   │   ├── components/
+│   │   │   ├── KanbanBoard.jsx     # Root board component
+│   │   │   ├── Column.jsx          # Individual column with drop zone
+│   │   │   ├── TaskCard.jsx        # Draggable task card with inline edit
+│   │   │   ├── Toolbar.jsx         # Task creation bar + file upload
+│   │   │   └── ProgressSidebar.jsx # Recharts progress chart
+│   │   ├── hooks/
+│   │   │   └── useSocket.js        # Socket.IO connection + all WS events
+│   │   ├── tests/
+│   │   │   ├── unit/               # Vitest unit tests
+│   │   │   ├── integration/        # Vitest integration tests
+│   │   │   └── e2e/                # Playwright E2E tests
+│   │   └── constants.js            # Columns, styles, shared config
+│   ├── playwright.config.js
+│   ├── vite.config.js
+│   └── package.json
 │
-└── README.md                     # Project guide
+└── README.md
 ```
 
 ---
 
-## 📌 What is Kanban?
+## Getting Started
 
-Kanban is a **workflow management system** that visually organizes tasks into columns representing different stages of work.
+### Prerequisites
 
-### 🏗 Example Board:
+- Node.js 18+
+- npm
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/ramsha1554/-websocket-kanban-board.git
+cd -websocket-kanban-board
+```
+
+### 2. Start the backend
+
+```bash
+cd backend
+npm install
+npm start
+# Server running on http://localhost:5000
+```
+
+### 3. Start the frontend
+
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env.local` file in the `frontend` folder:
 
 ```
-To Do       In Progress      Done
-----------------------------------
-Task A   →  Task B        →  Task C
-Task D   →  Task E        →  Task F
+VITE_SOCKET_URL=http://localhost:5000
 ```
 
-### 🔍 Reference Applications:
+Then run:
 
-| Kanban App      | Description                 | Link                                                                   |
-| --------------- | --------------------------- | ---------------------------------------------------------------------- |
-| **Trello**      | Task management tool        | [trello.com](https://trello.com/)                                      |
-| **Jira Kanban** | Agile development workflows | [atlassian.com/software/jira](https://www.atlassian.com/software/jira) |
-| **ClickUp**     | Project management tool     | [clickup.com](https://www.clickup.com/)                                |
-
-🔗 **Open-source Kanban boards:**
-
-- **[Wekan](https://github.com/wekan/wekan)** – Self-hosted Trello alternative
-- **[Planka](https://github.com/plankanban/planka)** – Open-source React Kanban
+```bash
+npm run dev
+# App running on http://localhost:3000
+```
 
 ---
 
-## 🚀 Take Home Task
+## Running Tests
 
-### 🔹 Features to Implement
+### Unit & Integration Tests (Vitest)
 
-- Create, update, delete, and move tasks between columns.
-- Upload attachments for tasks.
-- Assign task priority & category using a select dropdown.
-- Visualize task progress using a graph/chart.
-- Sync updates in real-time using WebSockets.
-- Test the application using Vitest + React testing library (unit/integration) and Playwright (E2E tests).
+```bash
+cd frontend
+npm run test
+```
 
-### 1️⃣ Backend (Node.js + WebSocket)
+Covers:
 
-- Set up a WebSocket (Socket.IO or native WebSockets) server.
-- Store tasks in memory or use a database (MongoDB preferred).
-- Implement WebSocket events for:
-  - `task:create` → Adds a new task.
-  - `task:update` → Updates a task (title, description, priority, category, attachments).
-  - `task:move` → Moves a task between columns.
-  - `task:delete` → Removes a task.
-  - `sync:tasks` → Sends all tasks to newly connected clients.
+- Board rendering, column display, dropdown options
+- File validation (valid/invalid MIME types)
+- Progress % calculation (0%, 50%, 100%, rounding)
+- All WebSocket events: `sync:tasks`, `task:created`, `task:updated`, `task:moved`, `task:deleted`, `task:error`
+- User interactions: create, edit, delete, move via arrow buttons
+- Progress sidebar live updates
 
-### 2️⃣ Frontend (React + WebSocket)
+### E2E Tests (Playwright)
 
-Kanban Board Features:
+```bash
+cd frontend
+npm run test:e2e
+```
 
-- Implement a Kanban board UI with the following columns:
-  - To Do
-  - In Progress
-  - Done
-- Tasks should be draggable between columns using React DnD or a similar library.
-- The UI should update in real-time when a user makes changes.
-- Display a loading indicator when waiting for the server to sync.
+Playwright automatically starts the backend and frontend before running tests. Covers:
 
-Additional UI Features:
-
-1. **Priority & Category Selection (Dropdown)**
-
-   - Each task should have a priority (Low, Medium, High).
-   - Each task should have a category (Bug, Feature, Enhancement).
-   - Implement using a React select dropdown (e.g., react-select).
-
-2. **File Upload**
-
-   - Users can upload attachments (e.g., images, PDFs) to tasks.
-   - Show a preview of the uploaded file (if it's an image).
-   - Store the file URL in state (simulated backend storage).
-
-3. **Task Progress Graph (Chart.js or Recharts)**
-   - Implement a task progress chart that shows:
-     - Number of tasks in each column.
-     - The percentage of completion (Done vs. total tasks).
-   - Update the graph in real-time as tasks move.
-
-### 3️⃣ Unit & Integration Testing (Vitest + React Testing Library)
-
-- Unit test core functions:
-  - Adding, updating, and deleting tasks.
-  - WebSocket connection logic.
-- Integration test:
-  - Ensure WebSocket updates correctly sync state across multiple clients.
-  - Validate drag-and-drop functionality for moving tasks.
-
-### 4️⃣ E2E Testing (Playwright)
-
-✅ **Kanban Board**
-
-- User can create a task.
-- User can drag and drop a task between columns.
-- UI updates in real-time when another user modifies tasks.
-- User can delete a task and see it removed.
-
-✅ **Dropdown Select Testing**
-
-- User can select a priority level.
-- User can change the task category and verify the update.
-
-✅ **File Upload Testing**
-
-- User can upload a file.
-- Uploaded files display correctly.
-- Invalid files (e.g., non-supported formats) show an error message.
-
-✅ **Graph Testing**
-
-- Task counts update correctly in the graph as tasks move.
-- Graph re-renders dynamically when new tasks are added.
+- Board loads with all three columns
+- Create, edit, and delete tasks
+- Priority and category selection
+- Valid image upload with inline preview
+- Invalid file type error message
+- Drag and drop between columns
+- Arrow button column navigation
+- Progress % updates to 100% when task moves to Done
+- Graph bar count updates as tasks are added
+- Multi-client real-time sync — task created, deleted, or edited in one tab appears instantly in another
 
 ---
 
-## 📊 Evaluation Criteria
+## WebSocket Events
 
-| **Criteria**                      | **Weightage** | **Key Points**                                     |
-| --------------------------------- | ------------- | -------------------------------------------------- |
-| **WebSocket Implementation**      | 10%           | Real-time updates, event handling, error handling  |
-| **React Component Structure**     | 10%           | Proper separation of concerns, reusable components |
-| **Testing**                       | 50%           | Unit, integration, and E2E tests passing           |
-| **Code Quality & Best Practices** | 20%           | Clean, well-documented, readable code              |
-| **UI & UX**                       | 10%           | Intuitive design, responsive layout                |
-
----
-
-## 🔗 Useful Resources
-
-📘 **Kanban & WebSockets**
-
-- [What is Kanban? (Atlassian)](https://www.atlassian.com/agile/kanban)
-- [WebSockets in Node.js (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
-
-🧪 **Vitest (Unit & Integration Testing)**
-
-- [Frontend Testing Guide](https://www.netguru.com/blog/front-end-testing)
-- [Vitest Docs](https://vitest.dev/)
-- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-
-🎭 **Playwright (E2E Testing)**
-
-- [Playwright Docs](https://playwright.dev/)
+| Event | Direction | Description |
+|---|---|---|
+| `sync:tasks` | Server → Client | Sends all tasks on connect |
+| `task:create` | Client → Server | Creates a new task |
+| `task:created` | Server → All clients | Broadcasts the new task |
+| `task:update` | Client → Server | Updates task fields |
+| `task:updated` | Server → All clients | Broadcasts updated task |
+| `task:move` | Client → Server | Moves task to a new column |
+| `task:moved` | Server → All clients | Broadcasts the column change |
+| `task:delete` | Client → Server | Deletes a task |
+| `task:deleted` | Server → All clients | Broadcasts the deleted task ID |
+| `task:error` | Server → Client | Sends validation/error message |
 
 ---
 
-## 🚀 Next Steps for Candidates
+## Deployment
 
-🎯 Implement **WebSocket logic** in the Kanban board  
-🎯 Add **state management** for tasks  
-🎯 Write **unit, integration, and E2E tests**  
-🎯 Deploy and verify real-time updates
+### Frontend — Vercel
 
-🛠 **Final Tip:** Pay attention to **code quality, real-time interactions, and testing coverage**. Good luck! 🚀
+Add this environment variable in your Vercel project settings:
+
+```
+VITE_SOCKET_URL=https://websocket-kanban-board-pzym.onrender.com
+```
+
+### Backend — Render
+
+| Setting | Value |
+|---|---|
+| Root Directory | `backend` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+
+Render injects `PORT` automatically. CORS is configured to allow all `.vercel.app` preview URLs and `localhost:3000`.
+
+---
+
+## Test Coverage Summary
+
+| Area | Count | What is covered |
+|---|---|---|
+| Unit | 18 tests | Rendering, file validation, progress % calculation, emit guards |
+| Integration | 14 tests | All WS events, user interactions, progress sidebar, DnD functional |
+| E2E | 14 tests | Full user flows, multi-client sync, file upload, graph, drag and drop |
