@@ -8,21 +8,25 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: ["http://localhost:3000", "https://websocket-kanban-board-lake.vercel.app"] },
+  cors: {
+    origin: (origin, callback) => {
+      if (!origin || origin === "http://localhost:3000" || origin.endsWith(".vercel.app")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST"],
+  },
   maxHttpBufferSize: 5e6,
 });
 
 const PORT = process.env.PORT || 5000;
 const TASKS_FILE = path.join(__dirname, "tasks.json");
-const UPLOADS_DIR = path.join(__dirname, "public", "uploads");
 
-// Ensure public/uploads exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
-// Serve static uploads
-app.use("/uploads", express.static(UPLOADS_DIR));
+const VALID_COLUMNS = ["todo", "inprogress", "done"];
+const VALID_PRIORITIES = ["Low", "Medium", "High"];
+const VALID_CATEGORIES = ["Feature", "Bug", "Enhancement"];
 
 // Load initial tasks
 let tasks = [];
@@ -43,13 +47,9 @@ function saveTasks() {
   }
 }
 
-function getBaseUrl() {
-  return process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
-
-const VALID_COLUMNS = ["todo", "inprogress", "done"];
-const VALID_PRIORITIES = ["Low", "Medium", "High"];
-const VALID_CATEGORIES = ["Feature", "Bug", "Enhancement"];
 
 // Root health check route
 app.get("/", (req, res) => {
@@ -60,61 +60,9 @@ app.get("/", (req, res) => {
 app.post("/test/reset", express.json(), (req, res) => {
   tasks = [];
   saveTasks();
-
-  // Clear uploads directory
-  if (fs.existsSync(UPLOADS_DIR)) {
-    const files = fs.readdirSync(UPLOADS_DIR);
-    for (const file of files) {
-      try {
-        fs.unlinkSync(path.join(UPLOADS_DIR, file));
-      } catch (err) {
-        console.error(`Failed to delete file ${file}:`, err.message);
-      }
-    }
-  }
-
   io.emit("sync:tasks", tasks);
   res.sendStatus(200);
 });
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
-
-function handleFileUpload(task) {
-  if (task.fileData && task.fileData.startsWith("data:")) {
-    const matches = task.fileData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (matches && matches.length === 3) {
-      const base64Data = matches[2];
-      const buffer = Buffer.from(base64Data, "base64");
-      
-      const fileExt = task.fileName ? path.extname(task.fileName) : ".png";
-      const baseName = task.fileName ? path.basename(task.fileName, fileExt) : "file";
-      const uniqueFileName = `${baseName}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}${fileExt}`;
-      
-      const filePath = path.join(UPLOADS_DIR, uniqueFileName);
-      fs.writeFileSync(filePath, buffer);
-      
-      // Update fileData with the static URL
-      task.fileData = `${getBaseUrl()}/uploads/${uniqueFileName}`;
-    }
-  }
-}
-
-function deleteUploadedFile(task) {
-  if (task && task.fileData && task.fileData.includes("/uploads/")) {
-    try {
-      const parts = task.fileData.split("/uploads/");
-      const fileName = parts[parts.length - 1];
-      const filePath = path.join(UPLOADS_DIR, fileName);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    } catch (err) {
-      console.error("Failed to delete file on disk:", err.message);
-    }
-  }
-}
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
@@ -125,7 +73,7 @@ io.on("connection", (socket) => {
       if (!data || typeof data.title !== "string" || !data.title.trim()) {
         return socket.emit("task:error", { action: "create", message: "Task title is required." });
       }
-      
+
       const task = {
         id: generateId(),
         column: "todo",
@@ -138,10 +86,7 @@ io.on("connection", (socket) => {
         ...data,
         title: data.title.trim(),
       };
-      
-      // Process file upload if any
-      handleFileUpload(task);
-      
+
       tasks.push(task);
       saveTasks();
       io.emit("task:created", task);
@@ -160,18 +105,8 @@ io.on("connection", (socket) => {
       if (index === -1) {
         return socket.emit("task:error", { action: "update", message: "Task not found." });
       }
-      
-      // Check if file is changing / new file uploaded
-      const oldTask = tasks[index];
-      const updatedTask = { ...oldTask, ...data };
-      
-      if (data.fileData && data.fileData !== oldTask.fileData) {
-        // Delete the old file first if it exists
-        deleteUploadedFile(oldTask);
-        handleFileUpload(updatedTask);
-      }
-      
-      tasks[index] = updatedTask;
+
+      tasks[index] = { ...tasks[index], ...data };
       saveTasks();
       io.emit("task:updated", tasks[index]);
     } catch (err) {
@@ -207,10 +142,6 @@ io.on("connection", (socket) => {
       if (!taskToDelete) {
         return socket.emit("task:error", { action: "delete", message: "Task not found." });
       }
-      
-      // Delete uploaded file if any
-      deleteUploadedFile(taskToDelete);
-      
       tasks = tasks.filter((t) => t.id !== id);
       saveTasks();
       io.emit("task:deleted", id);
