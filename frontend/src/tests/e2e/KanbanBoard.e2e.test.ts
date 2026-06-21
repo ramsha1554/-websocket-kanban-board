@@ -1,14 +1,24 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Kanban Board E2E", () => {
-  test.beforeEach(async ({ page, request }) => {
-    await request.post("http://localhost:5000/test/reset");
-    await page.goto("/");
-    await expect(page.getByText("Connected")).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText("Syncing tasks...")).toHaveCount(0, { timeout: 10000 });
-  });
+//   test.beforeEach(async ({ page, request }) => {
+//   await request.post("http://localhost:5000/test/reset");
+//   await page.goto("/");
+//   await expect(page.getByText("Connected")).toBeVisible({ timeout: 10000 });
+//   await expect(page.getByText("Syncing tasks...")).toHaveCount(0, { timeout: 10000 });
+//   await expect(page.getByText("0 tasks")).toBeVisible({ timeout: 10000 });
+// });
 
-  // ── Basic board ────────────────────────────────────────────────────────────
+test.beforeEach(async ({ page, request }) => {
+  await request.post("http://localhost:5000/test/reset");
+  await page.goto("/");
+  await expect(page.getByText("Connected")).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText("Syncing tasks...")).toHaveCount(0, { timeout: 10000 });
+  await expect(page.getByText("0 tasks")).toBeVisible({ timeout: 10000 });
+});
+
+
+
 
   test("loads the kanban board", async ({ page }) => {
     await expect(page.getByText("Kanban Board")).toBeVisible();
@@ -17,7 +27,7 @@ test.describe("Kanban Board E2E", () => {
     await expect(page.locator("span", { hasText: "Done" }).first()).toBeVisible();
   });
 
-  // ── Task CRUD ──────────────────────────────────────────────────────────────
+
 
   test("can create a task", async ({ page }) => {
     await page.getByPlaceholder("What needs to be done?").fill("E2E Test Task");
@@ -56,7 +66,7 @@ test.describe("Kanban Board E2E", () => {
     await expect(page.locator("span", { hasText: "Bug" })).toBeVisible();
   });
 
-  // ── Dropdowns ─────────────────────────────────────────────────────────────
+
 
   test("can select a priority level", async ({ page }) => {
     await page.locator(".react-select__control").first().click();
@@ -85,7 +95,7 @@ test.describe("Kanban Board E2E", () => {
     await expect(page.locator("span", { hasText: "Bug" }).first()).toBeVisible();
   });
 
-  // ── File upload ────────────────────────────────────────────────────────────
+
 
   test("invalid file shows error message", async ({ page }) => {
     await page.locator('input[type="file"]').setInputFiles({

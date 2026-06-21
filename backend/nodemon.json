@@ -1,0 +1,3 @@
+{
+  "ignore": ["tasks.json", "public/uploads/*"]
+}
