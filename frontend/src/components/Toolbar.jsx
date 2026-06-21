@@ -225,4 +225,3 @@ export default function Toolbar({ onCreate, error, setError }) {
     </div>
   );
 }
-}

@@ -6,6 +6,9 @@ const { mockSocket, mockSocketHandlers } = vi.hoisted(() => {
   const mockSocket = {
     on: vi.fn((event, cb) => { mockSocketHandlers[event] = cb; }),
     emit: vi.fn(),
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    connected: false,
     removeAllListeners: vi.fn(() => {
       Object.keys(mockSocketHandlers).forEach((k) => delete mockSocketHandlers[k]);
     }),
